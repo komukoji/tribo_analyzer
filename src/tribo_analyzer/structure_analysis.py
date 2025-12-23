@@ -10,7 +10,7 @@ from ase.neighborlist import neighbor_list
 from ase.data import chemical_symbols
 
 from .utils import resolve_mask_for_atoms, MaskType
-from .config import GLOBAL_CUTOFFS
+from .config import GLOBAL_CUTOFFS, _normalize_pair
 from .config import get_pair_cutoff
 
 
@@ -43,19 +43,18 @@ def compute_elementwise_coordination_map(
     # resolve mask into numpy bool array or None
     mask_arr = resolve_mask_for_atoms(mask, atoms)
 
-    # neighbor_list 用 cutoffs（原子ごとの最大 cutoff）
-    cutoffs = np.zeros(n_atoms, dtype=float)
+    # 最大cutoff
+    max_cutoff = 0.0
 
     for i, si in enumerate(symbols):
-        max_cut = 0.0
         for sj in unique_elements:
-            pair = tuple(sorted((si, sj)))
+            pair = _normalize_pair(si, sj)
             if pair in GLOBAL_CUTOFFS.pair_cutoffs:
-                max_cut = max(max_cut, GLOBAL_CUTOFFS.pair_cutoffs[pair])
-        cutoffs[i] = max_cut
+                max_cutoff = max(max_cutoff, GLOBAL_CUTOFFS.pair_cutoffs[pair])
+
 
     # 全近傍候補を検索
-    i_list, j_list, d_list = neighbor_list("ijd", atoms, cutoffs)
+    i_list, j_list, d_list = neighbor_list("ijd", atoms, max_cutoff)
 
     # 集計用:
     #   counts[(si, sj)] = si（中心元素）1個あたりの "sj との結合個数" の総和
@@ -69,12 +68,11 @@ def compute_elementwise_coordination_map(
         if mask_arr is None or bool(mask_arr[idx]):
             totals[si] += 1
 
-
     # 結合集計
     for i, j, dist in zip(i_list, j_list, d_list):
         si = symbols[i]
         sj = symbols[j]
-        pair = tuple(sorted((si, sj)))
+        pair = _normalize_pair(si, sj)
         cutoff = GLOBAL_CUTOFFS.pair_cutoffs.get(pair)
 
         if cutoff is None:
