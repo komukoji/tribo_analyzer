@@ -25,10 +25,10 @@ class CutoffConfig:
     pair_cutoffs: Dict[Pair, float] = field(default_factory=lambda: {
         # 金属同士は組成によってRDFばらばらだったから結合に関してあまり気にする必要ないかも
         ("O", "O"): 1.40,
-        ("O", "P"): 2.22,
+        ("O", "P"): 2.0,
         ("O", "S"): 2.10,
         ("O", "Fe"): 2.62,
-        ("O", "Zn"): 2.35,
+        ("O", "Zn"): 2.5,
         ("P", "P"): 2.62,
         ("P", "S"): 2.74,
         ("P", "Fe"): 2.78,

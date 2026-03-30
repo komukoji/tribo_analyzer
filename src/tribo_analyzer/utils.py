@@ -7,7 +7,7 @@ from ase import Atoms
 # mask type: None | sequence of bool | callable returning sequence of bool
 MaskType = Optional[Union[Sequence[bool], Callable[[Atoms], Sequence[bool]]]]
 
-def resolve_mask_for_atoms(mask: MaskType, atoms: Atoms) -> Optional[np.ndarray]:
+def resolve_mask_for_atoms(mask: MaskType, atoms: Atoms, is_wrap = True) -> Optional[np.ndarray]:
     """
     Normalize mask argument into a numpy boolean array or None.
 
@@ -20,6 +20,8 @@ def resolve_mask_for_atoms(mask: MaskType, atoms: Atoms) -> Optional[np.ndarray]
       - ValueError if the resolved mask length != len(atoms)
       - TypeError if callable returns None or something non-iterable
     """
+    if is_wrap:
+        atoms.wrap()
     if mask is None:
         return None
 
